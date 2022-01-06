@@ -104,8 +104,25 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+          <p class="p-3">
+            <button class="btn btn-primary float-right" type="button" onclick="open()">
+              <a href="/details/<%=books._id%>/comment">Leave a comment</a>
+            </button>
+          </p>
+        </div>
+        <div class="row">
+          <%books.comments.forEach((comment)=>{%>
+            <strong><%=comment.date%></strong>
+            <p><%=comment.comment%></p>
+
+          <%})%>
+        </div>
     </div>
     <script>
+        function open(){
+          document.getElementById("collapseCommentBox").style=block;
+        }
         const bookId = document.getElementById('bookId').value;
         const amount = document.getElementById('amount').value;
         const bookName = document.getElementById('bookName').value;

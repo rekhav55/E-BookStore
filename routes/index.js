@@ -10,6 +10,7 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const flash = require('connect-flash');
 const Razorpay = require('razorpay');
+const Comment = require('../models/comment');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -192,10 +193,14 @@ router.get('/adminLogout', (req,res)=>{
 });
 
 router.get('/showDetails/:id',ensureAuthenticated, (req,res)=>{
-    book.findById(req.params.id, function(err,data){
+    book.findById(req.params.id).populate({path: "comments", model: Comment}).exec((err,data)=>{
         if(err) throw err;
-        else res.render('bookDetails',{books:data, user:req.user});
+        else res.render('bookDetails',{books:data, user:req.user})
     })
+    // book.findById(req.params.id, function(err,data){
+    //     if(err) throw err;
+    //     else res.render('bookDetails',{books:data, user:req.user});
+    // })
 });
 
 router.post('/createOrder/:amt',(req,res)=>{
@@ -334,6 +339,36 @@ router.get('/autocomplete',(req,res)=>{
     
 });
 
+router.get('/details/:book/comment', ensureAuthenticated, (req,res)=>{
+    res.render('comment', {books: req.params.book});
+});
+
+router.post('/details/:book/comment', ensureAuthenticated, async(req,res)=>{
+    const comment_text = req.body.comments;
+    const user_id = req.user._id;
+    const user_name = req.user.name;
+
+    const book_id = req.params.book;
+
+    const bookDetails = await book.findById(book_id);
+    const comments = new Comment({
+        comment : comment_text,
+        author : {
+            id:user_id,
+            name:user_name,
+        },
+        book: {
+            id : bookDetails._id,
+            bookName : bookDetails.name,
+        }
+    });
+
+    await comments.save();
+
+    bookDetails.comments.push(comments._id);
+    await bookDetails.save();
+    res.redirect(`/showDetails/${book_id}`);
+});
 
 
 module.exports=router;

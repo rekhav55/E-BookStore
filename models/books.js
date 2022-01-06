@@ -29,7 +29,10 @@ const bookSchema = new mongoose.Schema({
     category:{
         type:String,
         required: true
-    }
+    },
+    comments : [{
+        type : String
+     }],
 });
 
 module.exports = new mongoose.model('book',bookSchema);

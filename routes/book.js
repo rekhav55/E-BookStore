@@ -4,6 +4,7 @@ const upload = require("../utils/multer");
 const cloudinary = require("../utils/cloudinary");
 // const multer = require('multer');
 const book = require('../models/books');
+const comment = require('../models/comment');
 const path=require('path');
 const alert = require('alert');
 
