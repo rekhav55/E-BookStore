@@ -104,7 +104,7 @@
                 </div>
                 <div style="margin-top:10px;">
                   <button class="btn btn-primary" type="button">
-                    <a href="/details/<%=books._id%>/comment" style="text-decoration: none; color:#fff">Leave a comment</a>
+                    <a href="/details/<%=books._id%>/comment" style="text-decoration: none; color:#fff">Leave a Review</a>
                   </button>
                 </div>
         </div>
@@ -113,22 +113,23 @@
     <hr>
     <div class="container">
         <p style="font-size: 18px; color:#2653d4"><strong>Reviews</strong></p>
-        <%books.comments.forEach((comment)=>{%>
+        <%if(books.comments.length==0){%>
           <div class="row">
-            <p>
-                <img src="https://st3.depositphotos.com/3102403/17634/v/450/depositphotos_176349124-stock-illustration-anonymous-user-circle-icon.jpg" style="width:40px;"> <span style="font-size:14px;"><%=comment.author.name%></span>
-                <span style="font-size: 14px; display: block; padding-left: 12px;">Reviewed on <%=comment.date.toDateString()%> 
-                  <% if(user && comment.author.id.equals(user._id)) {%>
-                  <button style="float:right;" class="btn btn-sm btn-primary">Delete</button>
-                  <button style="float:right; margin-right:5px" class="btn btn-sm btn-primary">Edit</button>
-                  <%}%>
-                </span> 
-              
-            </p>
-            <p style="margin-left: 12px; font-size: 14px;"><%=comment.comment%></p>
+            <p><span>No Reviews available</span></p>
           </div>
-          <hr>
-
+        <%}%>
+        <%books.comments.forEach((comment)=>{%>
+            <%if(comment){%>
+              <div class="row">
+                <p>
+                  <img src="https://st3.depositphotos.com/3102403/17634/v/450/depositphotos_176349124-stock-illustration-anonymous-user-circle-icon.jpg" style="width:40px;"> <span style="font-size:14px;"><%=comment.author.name%></span>
+                  <span style="font-size: 14px; display: block; padding-left: 12px;">Reviewed on <%=comment.date.toDateString()%> 
+                  </span> 
+                </p>
+              <p style="margin-left: 12px; font-size: 14px;"><%=comment.comment%></p>
+            </div>
+            <hr>
+            <%}%>
         <%})%>
     </div>
     <script>

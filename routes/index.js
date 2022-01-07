@@ -11,6 +11,7 @@ const cookieParser = require('cookie-parser');
 const flash = require('connect-flash');
 const Razorpay = require('razorpay');
 const Comment = require('../models/comment');
+const activity = require('../models/activity');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -152,7 +153,7 @@ router.get('/login', (req,res)=>{
 router.post('/login', (req,res,next)=>{
     passport.authenticate('user',{
         failureRedirect: '/login',
-        successRedirect: '/dashboard',
+        successRedirect: '/dashboard/1',
         failureFlash: true,
     })(req,res,next);
 });
@@ -160,21 +161,34 @@ router.post('/login', (req,res,next)=>{
 router.post('/adminlogin', (req,res,next)=>{
     passport.authenticate('admin',{
         failureRedirect: '/adminlogin',
-        successRedirect: '/adminDashboard',
+        successRedirect: '/adminDashboard/1',
         failureFlash: true,
     })(req,res,next);
 });
 
-router.get('/dashboard',ensureAuthenticated,(req,res)=>{
-    book.find({}, function(err,data){
-        res.render('userDashboard',{ books: data, user: req.user});
-    });
+router.get('/dashboard/:page',ensureAuthenticated,(req,res)=>{
+    var perPage = 12
+    var page = req.params.page || 1
+    book.find({}).skip((perPage*page)-perPage).limit(perPage).exec(function(err,data){
+        book.count().exec(function(err,count){
+            if(err) throw err;
+            res.render('userDashboard',{ books: data, user: req.user, current: page, pages: Math.ceil(count / perPage)});
+        })
+    })
 })
 
-router.get('/adminDashboard',ensureAdminAuthenticated,(req,res)=>{
-    book.find({}, function(err,data){
-        res.render('adminDashboard',{ books: data});
-    });
+router.get('/adminDashboard/:page',ensureAdminAuthenticated,(req,res)=>{
+    var perPage = 4
+    var page = req.params.page || 1
+    book.find({}).skip((perPage*page)-perPage).limit(perPage).exec(function(err,data){
+        book.count().exec(function(err,count){
+            if(err) throw err;
+            res.render('adminDashboard',{ books: data, current: page, pages: Math.ceil(count / perPage)});
+        })
+    })
+    // book.find({}, function(err,data){
+    //     res.render('adminDashboard',{ books: data});
+    // });
     
 });
 
@@ -222,6 +236,20 @@ router.post('/isComplete/:id',ensureAuthenticated, (req,res)=>{
                 data.save(function(err, d){
                     if(err) throw err;
                     else{
+                        book.findById(req.params.id, (err,data)=>{
+                            if(err) throw err;
+                            const activities = new activity({
+                                user: {
+                                    id: req.user._id,
+                                    name: req.user.name
+                                },
+                                category: "Book Bought",
+                                book: {
+                                    id: data._id,
+                                    name: data.name
+                                }
+                            }).save();
+                        })
                         user.findById(req.user._id).populate({path:"booksBought", model: book}).exec(function(err, bookData){
                             if(err) res.send(err);
                             else{
@@ -248,31 +276,55 @@ router.get('/library', ensureAuthenticated, (req,res)=>{
     })
 });
 
-router.get('/fiction',ensureAuthenticated, (req,res)=>{
-    book.find({category: 'Fiction'}, function(err, data){
-        if(err) throw err;
-        else{
-            res.render('fiction', {books: data, user: req.user});
-        }
+router.get('/fiction/:page',ensureAuthenticated, (req,res)=>{
+    var perPage = 12
+    var page = req.params.page || 1
+    book.find({category:'Fiction'}).skip((perPage*page)-perPage).limit(perPage).exec(function(err,data){
+        book.count().exec(function(err,count){
+            if(err) throw err;
+            res.render('fiction',{ books: data, user: req.user, current: page, pages: Math.ceil(count / perPage)});
+        })
     })
+    // book.find({category: 'Fiction'}, function(err, data){
+    //     if(err) throw err;
+    //     else{
+    //         res.render('fiction', {books: data, user: req.user});
+    //     }
+    // })
 })
 
-router.get('/nonFiction',ensureAuthenticated, (req,res)=>{
-    book.find({category: 'nonFiction'}, function(err, data){
-        if(err) throw err;
-        else{
-            res.render('nonfiction', {books: data, user: req.user});
-        }
+router.get('/nonFiction/:page',ensureAuthenticated, (req,res)=>{
+    var perPage = 12
+    var page = req.params.page || 1
+    book.find({category: 'nonFiction'}).skip((perPage*page)-perPage).limit(perPage).exec(function(err,data){
+        book.count().exec(function(err,count){
+            if(err) throw err;
+            res.render('nonFiction',{ books: data, user: req.user, current: page, pages: Math.ceil(count / perPage)});
+        })
     })
+    // book.find({category: 'nonFiction'}, function(err, data){
+    //     if(err) throw err;
+    //     else{
+    //         res.render('nonfiction', {books: data, user: req.user});
+    //     }
+    // })
 });
 
-router.get('/education',ensureAuthenticated, (req,res)=>{
-    book.find({category: 'Engineering'}, function(err, data){
-        if(err) throw err;
-        else{
-            res.render('education', {books: data, user: req.user});
-        }
+router.get('/education/:page',ensureAuthenticated, (req,res)=>{
+    var perPage = 12
+    var page = req.params.page || 1
+    book.find({category:'Engineering'}).skip((perPage*page)-perPage).limit(perPage).exec(function(err,data){
+        book.count().exec(function(err,count){
+            if(err) throw err;
+            res.render('education',{ books: data, user: req.user, current: page, pages: Math.ceil(count / perPage)});
+        })
     })
+    // book.find({category: 'Engineering'}, function(err, data){
+    //     if(err) throw err;
+    //     else{
+    //         res.render('education', {books: data, user: req.user});
+    //     }
+    // })
 });
 
 router.get('/search', ensureAuthenticated, (req,res)=>{
@@ -367,6 +419,24 @@ router.post('/details/:book/comment', ensureAuthenticated, async(req,res)=>{
 
     bookDetails.comments.push(comments._id);
     await bookDetails.save();
+
+    const activities = new activity({
+        user : {
+            id: req.user._id,
+            name: req.user.name
+        },
+        book : {
+            id: bookDetails._id,
+            name : bookDetails.name
+        },
+        comment: {
+            id: comments._id,
+            text: comments.comment
+        },
+        category: "Comment"
+    });
+
+    await activities.save();
     res.redirect(`/showDetails/${book_id}`);
 });
 

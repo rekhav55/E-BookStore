@@ -11,6 +11,35 @@
     <script src="https://kit.fontawesome.com/1966a3f118.js" crossorigin="anonymous"></script>
     <title>Admin Portal</title>
     <style>
+      li {
+ display: block;
+ transition-duration: 0.5s;
+}
+
+li:hover {
+  cursor: pointer;
+}
+        ul li ul {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  transition: all 0.5s ease;
+  margin-top: 1rem;
+  left: 0;
+  display: none;
+}
+
+ul li:hover > ul,
+ul li ul:hover {
+  visibility: visible;
+  opacity: 1;
+  display: block;
+}
+
+ul li ul li {
+  clear: both;
+  width: 100%;
+}
       .ui-menu .ui-menu-item-wrapper:hover, .ui-menu .ui-menu-item-wrapper.ui-state-active {
     color: white;
     background-color: #446eec;
@@ -11299,12 +11328,12 @@
 <body id="page-top">
   <div id="wrapper">
       <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/adminDashboard">
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/adminDashboard/1">
             <div class="sidebar-brand-text mx-3">Admin Portal</div>
         </a>
         <hr class="sidebar-divider my-0">
         <li class="nav-item active">
-            <a class="nav-link" href="/adminDashboard">
+            <a class="nav-link" href="/adminDashboard/1">
                 <span>Summary</span></a>
         </li>
         <hr class="sidebar-divider">
@@ -11314,6 +11343,15 @@
             </a>
         </li>
         <hr class="sidebar-divider">
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+              <span>Activities</span>
+          </a>
+          <ul class="dropdown" style="margin:0px;">
+            <li><a class="nav-link" href="/books/activity/purchase">Purchases</a></li>
+            <li><a class="nav-link" href="/books/activity/review">Reviews</a></li>
+          </ul>
+      </li>
     </ul>
     <div id="content-wrapper" class="d-flex flex-column">
       <div id="content">
@@ -11365,6 +11403,34 @@
                   </div>
                 <%})%>
               </div>
+              <% if (pages > 0) { %>
+                <ul class="pagination" style="margin-left: 40%; margin-top:1%;">
+                    <% if (current == 1) { %>
+                        <li class="page-item disabled"><a class="page-link">First</a></li>
+                    <% } else { %>
+                        <li class="page-item"><a class="page-link" href="/adminDashboard/1">First</a></li>
+                    <% } %>
+                    <% var i = (Number(current) > 5 ? Number(current) - 4 : 1) %>
+                    <% if (i !== 1) { %>
+                        <li class="page-item disabled"><a class="page-link">...</a></li>
+                    <% } %>
+                    <% for (; i <= (Number(current) + 4) && i <= pages; i++) { %>
+                        <% if (i == current) { %>
+                            <li class="page-item active"><a class="page-link"><%= i %></a></li>
+                        <% } else { %>
+                            <li class="page-item"><a class="page-link" href="/adminDashboard/<%= i %>"><%= i %></a></li>
+                        <% } %>
+                        <% if (i == Number(current) + 4 && i < pages) { %>
+                            <li class="page-item disabled"><a class="page-link">...</a></li>
+                        <% } %>
+                    <% } %>
+                    <% if (current == pages) { %>
+                        <li class="page-item disabled"><a class="page-link">Last</a></li>
+                    <% } else { %>
+                        <li class="page-item"><a class="page-link" href="/adminDashboard/<%= pages %>">Last</a></li>
+                    <% } %>
+                </ul>
+            <% } %>
             </div>
             
           </div>

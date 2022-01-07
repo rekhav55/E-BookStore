@@ -4,6 +4,7 @@ const upload = require("../utils/multer");
 const cloudinary = require("../utils/cloudinary");
 // const multer = require('multer');
 const book = require('../models/books');
+const activity = require('../models/activity');
 const comment = require('../models/comment');
 const path=require('path');
 const alert = require('alert');
@@ -89,6 +90,32 @@ router.post('/update/:id', (req,res)=>{
     book.findByIdAndUpdate(req.params.id, updatedData, function(err){
         if(err) throw err;
         else res.redirect('/adminDashboard');
+    })
+})
+
+router.get('/activity/purchase', (req,res)=>{
+    activity.find({category: 'Book Bought'}, (err,data)=>{
+        res.render('purchases',{activities: data});
+    })
+});
+
+router.get('/activity/review', (req,res)=>{
+    const review = activity.find({category: 'Comment'}).sort({'entryTime':-1});
+    review.exec((err,data)=>{
+        if(err) throw err;
+        res.render('reviews',{activities: data});
+    })
+});
+
+router.get('/delete/:comment/:activity', (req,res)=>{
+    comment.findByIdAndRemove(req.params.comment, (err,data)=>{
+        if(err) throw err;
+    })
+    activity.findByIdAndRemove(req.params.activity, (err,data)=>{
+        if(err) throw err;
+        else{
+            res.redirect('/books/activity/review');
+        }
     })
 })
 
