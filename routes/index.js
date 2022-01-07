@@ -370,5 +370,10 @@ router.post('/details/:book/comment', ensureAuthenticated, async(req,res)=>{
     res.redirect(`/showDetails/${book_id}`);
 });
 
+router.get('/pdf/:id', (req,res)=>{
+    book.findById(req.params.id, (err,data)=>{
+        res.render('viewPdf', {book:data});
+    })
+})
 
 module.exports=router;
