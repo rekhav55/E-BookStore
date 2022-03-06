@@ -217,53 +217,34 @@ router.get('/showDetails/:id',ensureAuthenticated, (req,res)=>{
     // })
 });
 
-router.post('/createOrder/:amt',(req,res)=>{
-    let options = {
-        amount: req.params.amt*100,
-        currency : "INR",
-    }
-    razorpay.orders.create(options, (err,order)=>{
-        console.log(order);
-        res.json(order);
-    })
-});
+// router.post('/createOrder/:amt',(req,res)=>{
+//     let options = {
+//         amount: req.params.amt*100,
+//         currency : "INR",
+//     }
+//     razorpay.orders.create(options, (err,order)=>{
+//         console.log(order);
+//         res.json(order);
+//     })
+// });
 
-router.post('/isComplete/:id',ensureAuthenticated, (req,res)=>{
-    razorpay.payments.fetch(req.body.razorpay_payment_id).then((doc)=>{
-        if(doc.status=='captured'){
-            user.findOne({_id: req.user._id}, function(err, data){
-                data.booksBought.push(req.params.id);
-                data.save(function(err, d){
-                    if(err) throw err;
-                    else{
-                        book.findById(req.params.id, (err,data)=>{
-                            if(err) throw err;
-                            const activities = new activity({
-                                user: {
-                                    id: req.user._id,
-                                    name: req.user.name
-                                },
-                                category: "Book Bought",
-                                book: {
-                                    id: data._id,
-                                    name: data.name
-                                }
-                            }).save();
-                        })
-                        user.findById(req.user._id).populate({path:"booksBought", model: book}).exec(function(err, bookData){
-                            if(err) res.send(err);
-                            else{
-                                res.render('library',{data: bookData, user: req.user});
-                                // console.log(bookData);
-                            }
-                        })
-                    }
-                })
-            })
-        }
-        else res.send('Payment Incomplete');
-    })
+router.get('/isComplete/:id',ensureAuthenticated, (req,res)=>{
+    // razorpay.payments.fetch(req.body.razorpay_payment_id).then((doc)=>{
+    //     if(doc.status=='captured'){
+            
+    //     }
+    //     else res.send('Payment Incomplete');
+    // })
+    user.findOne({_id: req.user._id}, function(err, data){
+        data.booksBought.push(req.params.id);
+        data.save(function(err, d){
+            if(err) throw err;
+            else{
+                res.redirect('/library');
 
+            }
+        })
+    })
 })
 
 router.get('/library', ensureAuthenticated, (req,res)=>{
